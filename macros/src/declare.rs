@@ -103,7 +103,7 @@ impl Declare {
         }
 
         quote!(
-            pub struct #elem_name<T> where T: crate::OutputType + Send {
+            pub struct #elem_name<T> where T: crate::OutputType {
                 pub attrs: #attr_type_name,
                 pub data_attributes: Vec<(&'static str, String)>,
                 pub events: T::Events,
@@ -140,7 +140,7 @@ impl Declare {
         }
 
         quote!(
-            impl<T> #elem_name<T> where T: crate::OutputType + Send {
+            impl<T> #elem_name<T> where T: crate::OutputType {
                 pub fn new(#args) -> Self {
                     #elem_name {
                         events: T::Events::default(),
@@ -197,7 +197,7 @@ impl Declare {
         let elem_name = self.elem_name();
         let vnode = self.impl_vnode();
         quote!(
-            impl<T> crate::dom::Node<T> for #elem_name<T> where T: crate::OutputType + Send {
+            impl<T> crate::dom::Node<T> for #elem_name<T> where T: crate::OutputType {
                 fn vnode(&'_ mut self) -> crate::dom::VNode<'_, T> {
                     #vnode
                 }
@@ -225,7 +225,7 @@ impl Declare {
         }
 
         quote!(
-            impl<T> crate::dom::Element<T> for #elem_name<T> where T: crate::OutputType + Send {
+            impl<T> crate::dom::Element<T> for #elem_name<T> where T: crate::OutputType {
                 fn name() -> &'static str {
                     #name
                 }
@@ -256,7 +256,7 @@ impl Declare {
         for t in &self.traits {
             let name = t.clone();
             body.extend(quote!(
-                impl<T> #name<T> for #elem_name<T> where T: crate::OutputType + Send {}
+                impl<T> #name<T> for #elem_name<T> where T: crate::OutputType {}
             ));
         }
         body
@@ -265,7 +265,7 @@ impl Declare {
     fn impl_into_iter(&self) -> TokenStream {
         let elem_name = self.elem_name();
         quote!(
-            impl<T> IntoIterator for #elem_name<T> where T: crate::OutputType + Send {
+            impl<T> IntoIterator for #elem_name<T> where T: crate::OutputType {
                 type Item = #elem_name<T>;
                 type IntoIter = std::vec::IntoIter<#elem_name<T>>;
                 fn into_iter(self) -> Self::IntoIter {
@@ -273,7 +273,7 @@ impl Declare {
                 }
             }
 
-            impl<T> IntoIterator for Box<#elem_name<T>> where T: crate::OutputType + Send {
+            impl<T> IntoIterator for Box<#elem_name<T>> where T: crate::OutputType {
                 type Item = Box<#elem_name<T>>;
                 type IntoIter = std::vec::IntoIter<Box<#elem_name<T>>>;
                 fn into_iter(self) -> Self::IntoIter {
@@ -348,7 +348,7 @@ impl Declare {
         quote!(
             impl<T> std::fmt::Display for #elem_name<T>
             where
-                T: crate::OutputType + Send,
+                T: crate::OutputType,
             {
                 fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
                     write!(f, "<{}", #name)?;

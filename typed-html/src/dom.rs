@@ -40,14 +40,14 @@ pub type DOMTree<T> = Box<Node<T>>;
 /// ```
 ///
 /// [Node]: trait.Node.html
-pub enum VNode<'a, T: OutputType + 'a + Send> {
+pub enum VNode<'a, T: OutputType + 'a> {
     Text(&'a str),
     UnsafeText(&'a str),
     Element(VElement<'a, T>),
 }
 
 /// An untyped representation of an HTML element.
-pub struct VElement<'a, T: OutputType + 'a + Send> {
+pub struct VElement<'a, T: OutputType + 'a> {
     pub name: &'static str,
     pub attributes: Vec<(&'static str, String)>,
     pub events: &'a mut T::Events,
@@ -66,20 +66,19 @@ pub struct VElement<'a, T: OutputType + 'a + Send> {
 /// [TextNode]: struct.TextNode.html
 /// [elements]: ../elements/index.html
 /// [vnode]: #tymethod.vnode
-pub trait Node<T: OutputType + Send>: Display + Send
-  where T: Send {
+pub trait Node<T: OutputType>: Display {
     /// Render the node into a [`VNode`][VNode] tree.
     ///
     /// [VNode]: enum.VNode.html
     fn vnode(&mut self) -> VNode<T>;
 }
 
-impl<T> IntoIterator for Box<dyn Node<T> + Send>
+impl<T> IntoIterator for Box<dyn Node<T>>
 where
-    T: OutputType + Send,
+    T: OutputType,
 {
-    type Item = Box<dyn Node<T> + Send>;
-    type IntoIter = std::vec::IntoIter<Box<dyn Node<T> + Send>>;
+    type Item = Box<dyn Node<T>>;
+    type IntoIter = std::vec::IntoIter<Box<dyn Node<T>>>;
 
     fn into_iter(self) -> Self::IntoIter {
         vec![self].into_iter()
@@ -91,8 +90,7 @@ where
 /// All [HTML elements][elements] implement this.
 ///
 /// [elements]: ../elements/index.html
-pub trait Element<T: OutputType>: Node<T>
-  where T: Send {
+pub trait Element<T: OutputType>: Node<T> {
     /// Get the name of the element.
     fn name() -> &'static str;
     /// Get a list of the attribute names for this element.
@@ -206,8 +204,7 @@ impl<T: OutputType> Display for TextNode<T> {
     }
 }
 
-impl<T: OutputType> Node<T> for TextNode<T>
-  where T: Send {
+impl<T: OutputType> Node<T> for TextNode<T> {
     fn vnode(&'_ mut self) -> VNode<'_, T> {
         VNode::Text(&self.0)
     }
@@ -222,7 +219,7 @@ impl<T: OutputType> IntoIterator for TextNode<T> {
     }
 }
 
-impl<T: OutputType + Send> IntoIterator for Box<TextNode<T>> {
+impl<T: OutputType> IntoIterator for Box<TextNode<T>> {
     type Item = Box<TextNode<T>>;
     type IntoIter = std::vec::IntoIter<Box<TextNode<T>>>;
 
@@ -231,10 +228,10 @@ impl<T: OutputType + Send> IntoIterator for Box<TextNode<T>> {
     }
 }
 
-impl<T: OutputType + Send> FlowContent<T> for TextNode<T> {}
-impl<T: OutputType + Send> PhrasingContent<T> for TextNode<T> {}
+impl<T: OutputType> FlowContent<T> for TextNode<T> {}
+impl<T: OutputType> PhrasingContent<T> for TextNode<T> {}
 
-impl<T: OutputType + Send> UnsafeTextNode<T> {
+impl<T: OutputType> UnsafeTextNode<T> {
     /// Construct a unsafe text node.
     ///
     /// The preferred way to construct a unsafe text node is with the [`unsafe_text!()`][unsafe_text]
@@ -246,20 +243,19 @@ impl<T: OutputType + Send> UnsafeTextNode<T> {
     }
 }
 
-impl<T: OutputType + Send> Display for UnsafeTextNode<T> {
+impl<T: OutputType> Display for UnsafeTextNode<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         f.write_str(&self.0)
     }
 }
 
-impl<T: OutputType + Send> Node<T> for UnsafeTextNode<T>
-  where T: Send {
+impl<T: OutputType> Node<T> for UnsafeTextNode<T> {
     fn vnode(&'_ mut self) -> VNode<'_, T> {
         VNode::UnsafeText(&self.0)
     }
 }
 
-impl<T: OutputType + Send> IntoIterator for UnsafeTextNode<T> {
+impl<T: OutputType> IntoIterator for UnsafeTextNode<T> {
     type Item = UnsafeTextNode<T>;
     type IntoIter = std::vec::IntoIter<UnsafeTextNode<T>>;
 
@@ -268,7 +264,7 @@ impl<T: OutputType + Send> IntoIterator for UnsafeTextNode<T> {
     }
 }
 
-impl<T: OutputType + Send> IntoIterator for Box<UnsafeTextNode<T>> {
+impl<T: OutputType> IntoIterator for Box<UnsafeTextNode<T>> {
     type Item = Box<UnsafeTextNode<T>>;
     type IntoIter = std::vec::IntoIter<Box<UnsafeTextNode<T>>>;
 
@@ -277,5 +273,5 @@ impl<T: OutputType + Send> IntoIterator for Box<UnsafeTextNode<T>> {
     }
 }
 
-impl<T: OutputType + Send> FlowContent<T> for UnsafeTextNode<T> {}
-impl<T: OutputType + Send> PhrasingContent<T> for UnsafeTextNode<T> {}
+impl<T: OutputType> FlowContent<T> for UnsafeTextNode<T> {}
+impl<T: OutputType> PhrasingContent<T> for UnsafeTextNode<T> {}
